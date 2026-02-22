@@ -647,8 +647,110 @@ void searchMenu() {
 
 //注册新用户
 void registerUser(int forceRole) {
-    
+    FILE *fp = fopen(USER_FILE, "ab+");
+    if (!fp) {
+        printf("无法打开用户文件\n");
+        return;
+    }
+
+    User newUser;
+    User temp;
+
+    while (1) {
+        printf("输入用户名:");
+        readString(newUser.username, MAX_NAME_LEN);
+        if (strlen(newUser.username) == 0) continue;
+
+        int exist = 0;
+        rewind(fp);
+        while (fread(&temp, sizeof(User), 1, fp)) {
+            if (strcmp(temp.username, newUser.username) == 0) {
+                exist = 1;
+                break;
+            }
+        }
+        if (exist) {
+            printf("用户名已存在, 请重试。\n");
+        }else {
+            break;
+        }
+    }
+
+    printf("请输入密码: ");
+    readString(newUser.password, MAX_PWD_LEN);
+
+    printf("请输入id: ");
+    readString(newUser.id, MAX_ID_LEN);
+
+    if (forceRole == 0) {
+        newUser.role = readInt("设置权限 (1:学生, 2:教师, 3:管理员): ", 1, 3);
+    }else {
+        newUser.role = forceRole;
+    }
+
+    fwrite(&newUser, sizeof(User), 1, fp);
+    fclose(fp);
+    printf("账号注册成功!\n");
+    pauseStytem();
 }
+
+//登陆
+int performLogin() {
+    char user[30], pwd[MAX_PWD_LEN];
+    User u;
+    FILE *fp = fopen(USER_FILE, "rb");
+
+    if (!fp) {
+        printf("检测到系统首次运行，正在创建默认管理员...\n");
+        fp = fopen(USER_FILE, "wb");
+        User admin = {"admin", "123456", "0000", 3};
+        fwrite(&admin, sizeof(User), 1, fp);
+        fp = fopen(USER_FILE, "rb");
+        printf("默认账号:admin, 密码: 123456");
+    }
+
+    printf("\n=== 系统登陆 ===\n");
+    printf("账号: ");
+    readString(user, 30);
+    printf("密码: ");
+    readString(pwd, MAX_PWD_LEN);
+
+    int logSuccess = 0;
+    while (fread(&u, sizeof(User), 1, fp)) {
+        if (strcmp(user, u.username) == 0 && strcmp(pwd, u.password) == 0) {
+            printf("登陆成功！用户名: %s,角色(role): %d\n", u.username, u.role);
+            currentUser = u;
+            logSuccess = 1;
+            break;
+        }
+    }
+    fclose(fp);
+    return logSuccess;
+}
+
+//管理员：管理用户列表
+void listAllUsers() {
+    FILE *fp = fopen(USER_FILE, "rb");
+    if (!fp) return;
+
+    User u;
+    printf("--- 用户列表 ---\n");
+    printf("%-20s %-10s\n", "用户名", "权限");
+
+    while (fread(&u, sizeof(User), 1, fp)) {
+        char roleName[30];
+        if (u.role == 1) 
+            strcpy(roleName, "学生");
+        else if(roleName == 2)
+            strcpy(roleName, "教师");
+        else 
+            strcpy(roleName, "管理员");
+        printf("%-20s %-10s\n", u.username, roleName);
+    }
+    fclose(fp);
+    pauseStytem();
+}
+
 
 
 
