@@ -506,6 +506,153 @@ void performStatistics() {
     pauseSystem();
 }
 
+//7. 信息管理与修改
+
+//录入心学生
+void addNewStudent() {
+    printf("\n=== 录入新学生 ===\n");
+    Student *node = createNode();
+
+    while (1) {
+        printf("输入学号(id):");
+        readString(node->id, MAX_ID_LEN);
+        if (strlen(node->id) == 0) {
+            printf("学号不能为空！\n"); 
+            continue;
+        }
+        else if (findStudentById(node->id)) {
+            printf("学号已存在！\n"); 
+            continue;
+        }
+        break;
+    }
+
+    printf("输入姓名:");
+    readString(node->name, MAX_NAME_LEN);
+
+    while(1) {
+        printf("输入性别 (M/F): "); 
+        readString(node->gender, 10);
+        if (strcmp(node->gender, "M")==0 || strcmp(node->gender, "F")==0 || 
+        strcmp(node->gender, "m")==0 || strcmp(node->gender, "f")==0) 
+            break;
+        printf("请输入 M 或 F。\n");
+    }
+
+    node->age = readInt("输入年龄 (15-40): ", 15, 40);
+    node->score_c = readFloat("C语言成绩 (0-100): ", 0, 100);
+    node->score_math = readFloat("数学成绩 (0-100): ", 0, 100);
+    node->score_eng = readFloat("英语成绩 (0-100): ", 0, 100);
+
+    calculateStats(node);
+    appendStudent(node);
+
+    printf("录入成功！\n");
+    saveToBinaryFile();
+    pauseSystem();
+}
+
+//修改学生信息 菜单
+void modifyStudentMenu() {
+    char id[MAX_ID_LEN];
+    printf("请输入要修改的学号:");
+    readString(id, MAX_ID_LEN);
+
+    Student *p = findStudentById(id);
+    if (!p) {
+        printf("没找到该学生\n");
+        pauseStytem();
+        return;
+    }
+
+    int choice;
+    while (1) {
+        printf("\n=== 修改信息: %s (%s) ===\n", p->name, p->id);
+        printf("1. 修改姓名\n");
+        printf("2. 修改性别\n");
+        printf("3. 修改年龄\n");
+        printf("4. 修改各科成绩\n");
+        printf("0. 完成修改\n");
+        choice = readInt("请选择:", 0, 4);
+
+        if (choice == 0) break;
+
+        switch(choice) {
+            case 1:
+                printf("原姓名: %s, 新姓名: ", p->name);
+                readString(p->name, MAX_NAME_LEN);
+                break;
+            case 2:
+                printf("原性别: %s, 新性别: ", p->gender);
+                readString(p->gender, 10);
+                break;
+            case 3: 
+                printf("原年龄: %d\n", p->age);
+                p->age = readInt("新年龄: ", 15, 40);
+                break;
+            case 4:
+                p->score_c = readFloat("新C语言成绩: ", 0, 100);
+                p->score_math = readFloat("新数学成绩: ", 0, 100);
+                p->score_eng = readFloat("新英语成绩: ", 0, 100);
+                calculateStats(p); // 重算总分
+                break;
+        }
+        printf("更新成功。\n");
+    }
+    saveToBinaryFile();
+}
+
+//搜索菜单
+void searchMenu() {
+    int choice;
+    printf("\n=== 查找学生 ===\n");
+    printf("1. 按学号查找\n2. 按姓名查找\n");
+    choice = readInt("选择:", 1, 2);
+
+    if (choice == 1) {
+        char id[MAX_ID_LEN];
+        printf("输入学号: "); 
+        readString(id, MAX_ID_LEN);
+        Student *p = findStudentById(id);
+        if (p) {
+            printTableHeader();
+            printStudentRow(p);
+        }else {
+            printf("没找到\n");
+        }
+    }else {
+        char name[MAX_NAME_LEN];
+        printf("输入姓名\n");
+        readString(name, MAX_NAME_LEN);
+
+        Student *p = head->next;
+        int found = 0;
+        printTableHeader();
+        while (p) {
+            //输入姓名的一部分就可以罗列出所有可能
+            if (strstr(p->name, name)) {
+                printStudentRow(p);
+                found = 1;
+            }
+            p = p->next;
+        }
+        if (!found) {
+            printf("没找到名字包含 %s 的学生", name);
+        }
+    }
+    pauseStytem();
+}
+
+// 8. 账号模块
+
+//注册新用户
+void registerUser(int forceRole) {
+    
+}
+
+
+
+
 
 
 
