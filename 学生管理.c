@@ -113,7 +113,7 @@ float readFloat(const char *prompt, float min, float max) {
     }
 }
 
-void pauseStytem() {
+void pauseSystem() {
     printf("\n按回车键继续...");
     getchar();
 }
@@ -186,7 +186,7 @@ int deleteStudentNode(const char *id) {
     return 1; 
 }
 
-void freeAllList() {
+void freeAlStudents() {
     Student *p = head->next;
     Student *temp;
     while (p) {
@@ -331,7 +331,7 @@ void menuSort() {
     order = readInt("请选择排序方式(1-2):", 1, 2);
 
     sortStudents(type, order);
-    pauseStytem();
+    pauseSystem();
 }
 
 // 5. 分页显示
@@ -354,7 +354,7 @@ void printStudentRow(Student *p) {
 void viewWithPagination() {
     if (head == NULL) {
         printf("还没有数据\n");
-        pauseStytem();
+        pauseSystem();
         return;
     }
 
@@ -397,7 +397,7 @@ void viewWithPagination() {
                 pageNumber++;
             }else {
                 printf("已经是最后一页了\n");
-                pauseStytem();
+                pauseSystem();
             }
         }else if (cmd[0] == 'p' || cmd[0] == 'P') {
             //cur指针必定是在每一页的开头，所以先检查前面有没有节点，有的话就肯定还有上一页
@@ -405,14 +405,14 @@ void viewWithPagination() {
                 Student *temp = cur;
                 int step = 0;
                 while (temp->prev != head && step < PAGE_SIZE) {
-                    temp = temp->next;
+                    temp = temp->prev;
                     step++;
                 }
                 cur = temp;
                 pageNumber--;
             }else {
                 printf("已经是第一页了");
-                pauseStytem();
+                pauseSystem();
             }
         }else if (cmd[0] == 'q' || cmd[0] == 'Q') {
             break;
@@ -561,7 +561,7 @@ void modifyStudentMenu() {
     Student *p = findStudentById(id);
     if (!p) {
         printf("没找到该学生\n");
-        pauseStytem();
+        pauseSystem();
         return;
     }
 
@@ -640,7 +640,7 @@ void searchMenu() {
             printf("没找到名字包含 %s 的学生", name);
         }
     }
-    pauseStytem();
+    pauseSystem();
 }
 
 // 8. 账号模块
@@ -658,7 +658,7 @@ void registerUser(int forceRole) {
 
     while (1) {
         printf("输入用户名:");
-        readString(newUser.username, MAX_NAME_LEN);
+        readString(newUser.username, 30);
         if (strlen(newUser.username) == 0) continue;
 
         int exist = 0;
@@ -691,7 +691,7 @@ void registerUser(int forceRole) {
     fwrite(&newUser, sizeof(User), 1, fp);
     fclose(fp);
     printf("账号注册成功!\n");
-    pauseStytem();
+    pauseSystem();
 }
 
 //登陆
@@ -706,7 +706,7 @@ int performLogin() {
         User admin = {"admin", "123456", "0000", 3};
         fwrite(&admin, sizeof(User), 1, fp);
         fp = fopen(USER_FILE, "rb");
-        printf("默认账号:admin, 密码: 123456");
+        printf("默认账号:admin, 密码: 123456\n");
     }
 
     printf("\n=== 系统登陆 ===\n");
@@ -741,14 +741,14 @@ void listAllUsers() {
         char roleName[30];
         if (u.role == 1) 
             strcpy(roleName, "学生");
-        else if(roleName == 2)
+        else if(u.role == 2)
             strcpy(roleName, "教师");
         else 
             strcpy(roleName, "管理员");
         printf("%-20s %-10s\n", u.username, roleName);
     }
     fclose(fp);
-    pauseStytem();
+    pauseSystem();
 }
 
 //9. 待办事项管理
@@ -901,12 +901,15 @@ void updateToDoItem(int id, int newStatus) {
             int choice = readInt("请输入选项", 1, 3);
 
             if (choice == 1) {
+                printf("原C语言成绩为: %.1f\n", p->score_c);
                 p->score_c = readFloat("新C语言成绩: ", 0, 100);
             }
             else if (choice == 2) {
+                printf("原数学成绩为: %.1f\n", p->score_math);
                 p->score_math = readFloat("新数学成绩: ", 0, 100);
             }
             else if (choice == 3) {
+                printf("原英语成绩为: %.1f\n", p->score_eng);
                 p->score_eng = readFloat("新英语成绩: ", 0, 100);
             }
             calculateStats(p);
@@ -945,7 +948,7 @@ void studentMenu() {
                 }else {
                     printf("系统里还没录入您的档案，请联系老师录入\n(当前绑定ID: %s)\n", currentUser.id);
                 }
-                pauseStytem();
+                pauseSystem();
                 break;
             }
             case 2: {
@@ -1018,7 +1021,7 @@ void teacherMenu() {
                 }else {
                     printf("删除失败,没找到该学号\n");
                 }
-                pauseStytem();
+                pauseSystem();
                 break;
             }
             case 6:
@@ -1086,7 +1089,7 @@ void adminMenu() {
 
                     choice = readInt("请审核(1.通过, 2.拒绝):", 1, 2);
 
-                    updateTodoStatus(id, choice);
+                    updateToDoItem(id, choice);
 
                     printf("处理完毕,按回车继续\n");
                     pauseSystem();
