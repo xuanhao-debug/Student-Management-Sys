@@ -186,7 +186,7 @@ int deleteStudentNode(const char *id) {
     return 1; 
 }
 
-void freeAlStudents() {
+void freeAllStudents() {
     Student *p = head->next;
     Student *temp;
     while (p) {
@@ -224,7 +224,7 @@ void loadFromBinaryFile() {
         return;
     }
 
-    freeAllList();
+    freeAllStudents();
 
     Student temp;
     int dataSize = sizeof(Student) - 2 * sizeof(struct Student*);
@@ -1063,7 +1063,7 @@ void adminMenu() {
                 listAllUsers(); 
                 break;
             case 4: 
-                menuTeacher(); 
+                teacherMenu(); 
                 break; 
             case 5: {
                 printf("这将删除所有学生数据！确认吗 (y/n): ");
