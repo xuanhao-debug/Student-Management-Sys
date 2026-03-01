@@ -320,6 +320,8 @@ void sortStudents(int sortType, int order) {
     printf("排序完成\n");
 }
 
+void viewWithPagination();
+
 //排序菜单
 void menuSort() {
     int type, order;
