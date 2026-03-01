@@ -104,7 +104,7 @@ float readFloat(const char *prompt, float min, float max) {
                 if (val >= min && val <= max) {
                     return val;
                 }else {
-                    printf("输入错误: 数值必须在 %d 和 %d 之间\n", min, max);
+                    printf("输入错误: 数值必须在 %f 和 %f 之间\n", min, max);
                 }
             }else {
                 printf("输入错误: 请输入有效数字\n");
@@ -160,7 +160,7 @@ void appendStudent(Student *newNode) {
 }
 
 Student* findStudentById(const char *id) {
-    Student *p = head;
+    Student *p = head->next;
     while (p) {
         if (strcmp(p->id, id) == 0) {
             return p;
@@ -352,7 +352,7 @@ void printStudentRow(Student *p) {
 
 //分页查看
 void viewWithPagination() {
-    if (head == NULL) {
+    if (head->next == NULL) {
         printf("还没有数据\n");
         pauseSystem();
         return;
@@ -439,7 +439,7 @@ void drawSubjectBar(const char *subName, int ranges[]) {
 
 //综合统计
 void performStatistics() {
-    if (!head) {
+    if (head->next == NULL) {
         printf("暂无数据\n");
         return;
     }
@@ -625,6 +625,12 @@ void searchMenu() {
         printf("输入姓名\n");
         readString(name, MAX_NAME_LEN);
 
+        if (strlen(name) == 0) {
+            printf("输入不能为空！\n");
+            pauseSystem();
+            return;
+        }
+
         Student *p = head->next;
         int found = 0;
         printTableHeader();
@@ -694,7 +700,7 @@ void registerUser(int forceRole) {
     pauseSystem();
 }
 
-//登陆
+//登录
 int performLogin() {
     char user[30], pwd[MAX_PWD_LEN];
     User u;
@@ -705,6 +711,11 @@ int performLogin() {
         fp = fopen(USER_FILE, "wb");
         User admin = {"admin", "123456", "0000", 3};
         fwrite(&admin, sizeof(User), 1, fp);
+
+        //fwrite 写入的数据不会立刻保存到硬盘里
+        //必须调用fclose
+        fclose(fp);
+
         fp = fopen(USER_FILE, "rb");
         printf("默认账号:admin, 密码: 123456\n");
     }
@@ -1072,7 +1083,6 @@ void adminMenu() {
                     freeAllStudents();
                     remove(DATA_FILE);
                     printf("数据已重置。\n");
-                    initList(); // 重新初始化
                 }
                 break;
             }
@@ -1139,6 +1149,16 @@ void adminMenu() {
 
                 FILE *fp = fopen("users.dat", "rb");
                 FILE *tempFp = fopen("temp.dat", "wb");
+
+                //安全判断
+                if (fp == NULL || tempFp == NULL) {
+                    printf("文件打开失败！\n");
+                    if (fp) fclose(fp);
+                    if (tempFp) fclose(tempFp);
+                    pauseSystem();
+                    break;
+                }
+
                 User u;
                 int found = 0;
 
