@@ -331,7 +331,7 @@ void menuSort() {
     order = readInt("请选择排序方式(1-2):", 1, 2);
 
     sortStudents(type, order);
-    pauseSystem();
+    viewWithPagination();
 }
 
 // 5. 分页显示
