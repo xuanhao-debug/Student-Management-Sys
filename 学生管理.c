@@ -57,18 +57,30 @@ void clearBuffer() {
 
 void readString(char *buffer, int maxLen) {
     char temp[1024];
-    if (fgets(temp, sizeof(temp), stdin)) {
-        int len = strlen(temp);
-        if (len > 0 && temp[len - 1] == '\n') {
-            temp[len - 1] = '\0';
-        }else {
-            clearBuffer();//读取的超过maxlen了，最后一个不是换行符，要清除输入缓冲区
-        }
+    while (1) {
+        if (fgets(temp, sizeof(temp), stdin)) {
+            int len = strlen(temp);
+            
+            //读到换行符了吗？
+            if (len > 0 && temp[len - 1] == '\n') {
+                temp[len - 1] = '\0';
+                len--;
+            }else {
+                clearBuffer();
+            }
 
-        if (strlen(temp) >= maxLen) {
-            temp[maxLen - 1] = '\0';
+            //检查实际长度是否超过了允许的最大长度
+            if (len >= maxLen) {
+                printf("输入过长(最多%d), 请重新输入:", maxLen - 1);
+                continue;
+            }
+
+            strcpy(buffer, temp);
+            break;
+        }else {
+            //防止遇到EOF发生死循环
+            break;
         }
-        strcpy(buffer, temp);
     }
 }
 
@@ -320,6 +332,7 @@ void sortStudents(int sortType, int order) {
     printf("排序完成\n");
 }
 
+//函数声明为了menusort不报错
 void viewWithPagination();
 
 //排序菜单
@@ -333,6 +346,8 @@ void menuSort() {
     order = readInt("请选择排序方式(1-2):", 1, 2);
 
     sortStudents(type, order);
+
+    //排序完立刻显示排序后的学生列表
     viewWithPagination();
 }
 
