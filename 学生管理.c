@@ -10,7 +10,7 @@
 #define PAGE_SIZE 5              // 每页显示行数
 
 #define ReGister   1
-#define PwdReset    2//密码找回和密码重置时都在2里面，或者说，密码找回就是密码重置
+#define PwdReset    2
 #define Appeal      3
 
 typedef struct Student {
@@ -445,12 +445,13 @@ void drawSubjectBar(const char *subName, int ranges[]) {
     printf("\n[%s成绩分布]\n", subName);
     char *lables[] = {"<60", "60-69", "70-79", "80-89", ">=90"};
     for (int i = 0; i < 5; i++) {
-        printf("%s | ", lables[i]);
+        printf("%-5s | ", lables[i]);
         //打印#号
         for (int j = 0; j < ranges[i]; j++) {
-            printf("#");
+            printf("█");
         }
         printf("(%d)\n", ranges[i]);
+        printf("\n");
     }
 }
 
@@ -668,6 +669,31 @@ void searchMenu() {
 
 // 8. 账号模块
 
+//生成用户id
+void getNewUserId(char *newIdStr) {
+    FILE *fp = fopen(USER_FILE, "rb");
+
+    if (!fp) {
+        strcpy(newIdStr, "202601");
+        return;
+    }
+    fseek(fp, 0, SEEK_END);
+    if (ftell(fp) == 0) {
+        strcpy(newIdStr, "202601");
+        fclose(fp);
+        return;
+    }
+
+    fseek(fp, -((long)sizeof(User)), SEEK_CUR);
+    User lastUser;
+    fread(&lastUser, sizeof(User), 1, fp);
+    fclose(fp);
+
+    int curId = atoi(lastUser.id);
+    int nextId = curId + 1;
+    sprintf(newIdStr, "%d", nextId);
+}
+
 //注册新用户
 void registerUser(int forceRole) {
     FILE *fp = fopen(USER_FILE, "ab+");
@@ -702,8 +728,9 @@ void registerUser(int forceRole) {
     printf("请输入密码: ");
     readString(newUser.password, MAX_PWD_LEN);
 
-    printf("请输入id: ");
-    readString(newUser.id, MAX_ID_LEN);
+    getNewUserId(newUser.id);
+    printf("注册成功,你的ID是: %s\n", newUser.id);
+
 
     if (forceRole == 0) {
         newUser.role = readInt("设置权限 (1:学生, 2:教师, 3:管理员): ", 1, 3);
@@ -726,7 +753,7 @@ int performLogin() {
     if (!fp) {
         printf("检测到系统首次运行，正在创建默认管理员...\n");
         fp = fopen(USER_FILE, "wb");
-        User admin = {"admin", "123456", "0000", 3};
+        User admin = {"admin", "123456", "202601", 3};
         fwrite(&admin, sizeof(User), 1, fp);
 
         //fwrite 写入的数据不会立刻保存到硬盘里
